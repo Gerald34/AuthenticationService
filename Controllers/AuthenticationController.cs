@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AuthenticationService.Requests;
-using AuthenticationService.Repositories;
+using AuthenticationService.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace AuthenticationService.Controllers
@@ -9,10 +9,10 @@ namespace AuthenticationService.Controllers
     [Route("authentication")]
     public class AuthenticationController : ControllerBase
     {
-        private IUserRepository _userRepository;
-        public AuthenticationController(IUserRepository userRepository)
+        private UserService _userService;
+        public AuthenticationController(UserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace AuthenticationService.Controllers
         [HttpPost("authenticate")]
         public IActionResult post(AuthenticateRequest authenticateRequest)
         {
-            var response = _userRepository.Authenticate(authenticateRequest);
+            var response = _userService.Authenticate(authenticateRequest);
             if (response.error)
             {
                 return BadRequest(new
@@ -48,7 +48,7 @@ namespace AuthenticationService.Controllers
         [HttpGet, Authorize]
         public async Task<IActionResult> GetAllAdminUsers()
         {
-            var users = _userRepository.GetAll();
+            var users = _userService.GetAll();
             if (users == null)
             {
                 var errorResponse = new
@@ -78,9 +78,9 @@ namespace AuthenticationService.Controllers
         /// <param name="username"></param>
         /// <returns></returns>
         [HttpGet("verification")]
-        public dynamic VerifyAccount(int userID, string username)
+        public dynamic VerifyAccount(Guid userID, string username)
         {
-            return _userRepository.ActivateAccount(userID, username);
+            return _userService.ActivateAccount(userID, username);
         }
 
     }

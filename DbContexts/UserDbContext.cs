@@ -5,15 +5,9 @@ namespace AuthenticationService.DbContexts
 {
     public class UserDbContext : DbContext
     {
-        protected readonly IConfiguration Configuration;
-        public UserDbContext(IConfiguration configuration)
+        public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)
         {
-            Configuration = configuration;
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-        {
-            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            Database.EnsureCreated();
         }
 
         public DbSet<UserEntity> Users { get; set; }

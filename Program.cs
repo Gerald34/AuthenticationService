@@ -1,9 +1,16 @@
-using AuthenticationService.Repositories;
+using AuthenticationService.Services;
+using Microsoft.EntityFrameworkCore;
+using AuthenticationService.DbContexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<IUserRepository>();
+builder.Services.AddDbContext<UserDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("UserDatabase"));
+});
+
+builder.Services.AddScoped<UserService>();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

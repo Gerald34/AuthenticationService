@@ -7,9 +7,9 @@ namespace AuthenticationService.Repositories
     {
         public dynamic Authenticate(AuthenticateRequest authenticateRequest);
         public IEnumerable<UserEntity> GetAll();
-        public UserEntity GetById(int id);
+        public UserEntity GetById(Guid id);
         public dynamic CreateAccount(UserEntity userEntity);
-        public dynamic ActivateAccount(int userID, string username);
+        public dynamic ActivateAccount(Guid userID, string username);
     }
 }
 
