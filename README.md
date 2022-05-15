@@ -10,6 +10,7 @@ Download and Install the [Microsoft .NET Core 6](https://dotnet.microsoft.com/en
 Clone project [GitHub](https://github.com/Gerald34/AuthenticationService.git) and run the following command to install dependencies.
 
 ```bash
+git clone https://github.com/Gerald34/AuthenticationService.git
 dotnet restore
 ```
 
@@ -36,4 +37,4 @@ dotnet watch run
 ## Author
 Gerald Mathabela
 
-Founder: [Labworx Studios](https://www.labworxstudios.com)
+Founder: [Labworx Digital Studios](https://www.labworxtechstudios.com)
