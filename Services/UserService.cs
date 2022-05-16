@@ -5,6 +5,7 @@ using AuthenticationService.Requests;
 using AuthenticationService.Utils;
 using AuthenticationService.Repositories;
 using AuthenticationService.Entities;
+using AuthenticationService.Responses;
 
 namespace AuthenticationService.Services
 {
@@ -19,6 +20,7 @@ namespace AuthenticationService.Services
         UserDbContext usersDbContext)
         {
             _appSettings = appSettings.Value;
+            Console.WriteLine(_appSettings.Secret);
             _userDbContext = usersDbContext;
         }
 
@@ -47,10 +49,7 @@ namespace AuthenticationService.Services
             {
                 error = false,
                 message = "User found",
-                data = new
-                {
-
-                }
+                data = new AuthenticateResponse(user, "Bearer", token)
             };
 
             return _response;
@@ -81,8 +80,24 @@ namespace AuthenticationService.Services
             {
                 return new { error = true, message = "User with username: " + userEntity.username + " already exists, try a different valid email address." };
             }
-            _userDbContext.Users.Add(userEntity);
-            return new { error = false, message = "User account created" };
+            UserEntity newUser = new UserEntity
+            {
+                id = new Guid(),
+                firstName = userEntity.firstName,
+                lastName = userEntity.lastName,
+                username = userEntity.username,
+                password = PasswordEncryptor.EncriptString(userEntity.password, 1000),
+                dob = userEntity.dob,
+                createdAt = DateTime.Now,
+                updatedAt = DateTime.Now,
+                gender = userEntity.gender,
+                active = 0,
+                verified = false
+            };
+
+            _userDbContext.Users.Add(newUser);
+            _userDbContext.SaveChanges();
+            return new { error = false, message = "User account created", data = newUser };
         }
 
         public dynamic ActivateAccount(Guid userID, string username)
@@ -105,7 +120,7 @@ namespace AuthenticationService.Services
         private bool _UserExists(string username)
         {
             return (_userDbContext.Users.FirstOrDefault
-                <UserEntity>(data => data.username == username) == null) ? true : false;
+                <UserEntity>(data => data.username == username) != null) ? true : false;
         }
     }
 }

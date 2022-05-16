@@ -1,5 +1,6 @@
+using AuthenticationService.Entities;
 
-namespace AuthenticationService.Entities
+namespace AuthenticationService.Responses
 {
     public class AuthenticateResponse
     {
@@ -13,11 +14,9 @@ namespace AuthenticationService.Entities
         public int gender { get; set; }
         public int active { get; set; }
         public bool verified { get; set; }
-        public string token { get; set; } = string.Empty;
-        public string type { get; set; } = string.Empty;
+        public dynamic authentication { get; set; }
 
-
-        public AuthenticateResponse(UserEntity userEntity, string autheToken)
+        public AuthenticateResponse(UserEntity userEntity, string authType, string authToken)
         {
             id = userEntity.id;
             firstName = userEntity.firstName;
@@ -27,8 +26,7 @@ namespace AuthenticationService.Entities
             verified = userEntity.verified;
             dob = userEntity.dob;
             gender = userEntity.gender;
-            token = autheToken;
-            type = "Bearer";
+            authentication = new { type = authType, token = authToken };
         }
     }
 }

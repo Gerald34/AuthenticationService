@@ -1,6 +1,7 @@
 using AuthenticationService.Services;
 using Microsoft.EntityFrameworkCore;
 using AuthenticationService.DbContexts;
+using AuthenticationService.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,9 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("UserDatabase"));
 });
 
-builder.Services.AddScoped<UserService>();
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+builder.Services.AddScoped<UserService, UserService>();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

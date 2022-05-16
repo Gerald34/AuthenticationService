@@ -2,6 +2,7 @@
 using AuthenticationService.Requests;
 using AuthenticationService.Services;
 using Microsoft.AspNetCore.Authorization;
+using AuthenticationService.Entities;
 
 namespace AuthenticationService.Controllers
 {
@@ -39,6 +40,14 @@ namespace AuthenticationService.Controllers
             }
 
             return Ok(response);
+        }
+
+        [HttpPost("create")]
+        public dynamic CreateAccount(UserEntity user)
+        {
+            dynamic process = _userService.CreateAccount(user);
+
+            return (process.error) ? BadRequest(process) : Ok(process);
         }
 
         /// <summary>
