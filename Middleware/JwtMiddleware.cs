@@ -10,12 +10,12 @@ namespace AuthenticationService.Middleware
     public class JwtMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly AppSettings _appSettings;
+        private readonly JwtSettings _jwtSettings;
 
-        public JwtMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings)
+        public JwtMiddleware(RequestDelegate next, IOptions<JwtSettings> jwtSettings)
         {
             _next = next;
-            _appSettings = appSettings.Value;
+            _jwtSettings = jwtSettings.Value;
         }
 
         public async Task Invoke(HttpContext context, UserService userService)
@@ -23,7 +23,10 @@ namespace AuthenticationService.Middleware
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
+            {
+                Console.Write("Authorization: ", token);
                 attachUserToContext(context, userService, token);
+            }
 
             await _next(context);
         }
@@ -33,14 +36,13 @@ namespace AuthenticationService.Middleware
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
@@ -48,12 +50,11 @@ namespace AuthenticationService.Middleware
                 var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
 
                 // attach user to context on successful jwt validation
-                context.Items["User"] = userService.GetById(userId);
+                context.Items["UserEntity"] = userService.GetById(userId);
             }
             catch
             {
-                // do nothing if jwt validation fails
-                // user is not attached to context so request won't have access to secure routes
+                Console.WriteLine("Caught Exception");
             }
         }
     }

@@ -28,6 +28,10 @@ namespace AuthenticationService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("RSAIdNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("active")
                         .HasColumnType("int");
 
@@ -38,21 +42,29 @@ namespace AuthenticationService.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("firstName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("gender")
                         .HasColumnType("int");
 
                     b.Property<string>("lastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("password")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("role")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("updatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("username")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("verified")

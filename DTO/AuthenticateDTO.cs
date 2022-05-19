@@ -1,8 +1,9 @@
+using System.Text.Json.Serialization;
 using AuthenticationService.Entities;
 
-namespace AuthenticationService.Responses
+namespace AuthenticationService.DTO
 {
-    public class AuthenticateResponse
+    public class AuthenticateDTO
     {
         public Guid id { get; set; }
         public string firstName { get; set; } = string.Empty;
@@ -12,11 +13,11 @@ namespace AuthenticationService.Responses
         public DateTime createdAt { get; set; }
         public DateTime updatedAt { get; set; }
         public int gender { get; set; }
-        public int active { get; set; }
+        public StatusIdentifiers active { get; set; }
         public bool verified { get; set; }
         public dynamic authentication { get; set; }
 
-        public AuthenticateResponse(UserEntity userEntity, string authType, string authToken)
+        public AuthenticateDTO(UserEntity userEntity, string authType, string authToken)
         {
             id = userEntity.id;
             firstName = userEntity.firstName;
@@ -26,7 +27,19 @@ namespace AuthenticationService.Responses
             verified = userEntity.verified;
             dob = userEntity.dob;
             gender = userEntity.gender;
-            authentication = new { type = authType, token = authToken };
+            authentication = (authToken != null && authType != null) ? new { type = authType, token = authToken } : null;
+        }
+
+        public AuthenticateDTO(UserEntity userEntity)
+        {
+            id = userEntity.id;
+            firstName = userEntity.firstName;
+            lastName = userEntity.lastName;
+            username = userEntity.username;
+            active = userEntity.active;
+            verified = userEntity.verified;
+            dob = userEntity.dob;
+            gender = userEntity.gender;
         }
     }
 }

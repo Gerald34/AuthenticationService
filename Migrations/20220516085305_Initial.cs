@@ -14,10 +14,12 @@ namespace AuthenticationService.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    firstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    lastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    username = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    role = table.Column<int>(type: "int", nullable: false),
+                    firstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    lastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    username = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RSAIdNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     dob = table.Column<DateTime>(type: "datetime2", nullable: false),
                     createdAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     updatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),

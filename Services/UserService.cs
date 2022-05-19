@@ -5,23 +5,30 @@ using AuthenticationService.Requests;
 using AuthenticationService.Utils;
 using AuthenticationService.Repositories;
 using AuthenticationService.Entities;
-using AuthenticationService.Responses;
+using AuthenticationService.DTO;
 
 namespace AuthenticationService.Services
 {
+    /// <summary>
+    /// performs all user related tasks
+    /// </summary>
     public class UserService : IUserRepository
     {
         private UserDbContext _userDbContext;
         private readonly AppSettings _appSettings;
-        private dynamic _response = null;
+        private readonly JwtSettings _jwtSettings;
+        private readonly RSAIDNumberService _rSAIDNumberService;
 
         public UserService(
         IOptions<AppSettings> appSettings,
-        UserDbContext usersDbContext)
+        IOptions<JwtSettings> jwtSettings,
+        UserDbContext usersDbContext,
+        RSAIDNumberService rSAIDNumberService)
         {
             _appSettings = appSettings.Value;
-            Console.WriteLine(_appSettings.Secret);
             _userDbContext = usersDbContext;
+            _rSAIDNumberService = rSAIDNumberService;
+            _jwtSettings = jwtSettings.Value;
         }
 
         /// <summary>
@@ -40,53 +47,58 @@ namespace AuthenticationService.Services
 
             if (!PasswordEncryptor.decryptString(authenticateRequest!.Password, user.password))
             {
-                _response = new { error = true, message = "Username or password is incorrect." };
-                return _response;
+                return new { error = true, message = "Username or password is incorrect." };
             }
 
-            var token = JwtTokenGenerator.GenerateJwtToken(user, _appSettings.Secret);
-            _response = new
+            var token = JwtTokenGenerator.GenerateJwtToken(user, _jwtSettings.SecretKey);
+            return new
             {
                 error = false,
                 message = "User found",
-                data = new AuthenticateResponse(user, "Bearer", token)
+                data = new AuthenticateDTO(user, "Bearer", token)
             };
 
-            return _response;
         }
 
-        public IEnumerable<UserEntity> GetAll()
+        public IEnumerable<AuthenticateDTO> GetAll()
         {
-            return _userDbContext.Users.ToList<UserEntity>();
+            List<UserEntity> users = _userDbContext.Users.ToList<UserEntity>();
+            List<AuthenticateDTO> userCollection = new List<AuthenticateDTO>();
+            foreach (UserEntity user in users)
+                userCollection.Add(new AuthenticateDTO(user));
+
+            return userCollection;
         }
 
-        public UserEntity GetById(Guid id)
+        public AuthenticateDTO GetById(Guid id)
         {
             UserEntity userEntity = _userDbContext.Users.FirstOrDefault
                 <UserEntity>(user => user.id == id);
 
-            return (userEntity == null) ? userEntity : null;
+            return (userEntity == null) ? new AuthenticateDTO(userEntity) : null;
         }
 
         public dynamic CreateAccount(UserEntity userEntity)
         {
             if (userEntity == null)
-            {
                 throw new ArgumentNullException(nameof(userEntity));
-            }
 
-            bool userExists = _UserExists(userEntity.username);
+            bool userExists = _FindUserByUsername(userEntity.username);
             if (userExists)
-            {
                 return new { error = true, message = "User with username: " + userEntity.username + " already exists, try a different valid email address." };
-            }
+
+            if (!_rSAIDNumberService.ValidRSAID(userEntity.RSAIdNumber))
+                return new { error = true, message = "Provided ID content is not a valid RSA ID number." };
+
             UserEntity newUser = new UserEntity
             {
                 id = new Guid(),
+                role = userEntity.role,
                 firstName = userEntity.firstName,
                 lastName = userEntity.lastName,
                 username = userEntity.username,
-                password = PasswordEncryptor.EncriptString(userEntity.password, 1000),
+                password = PasswordEncryptor.EncryptString(userEntity.password, 1000),
+                RSAIdNumber = userEntity.RSAIdNumber,
                 dob = userEntity.dob,
                 createdAt = DateTime.Now,
                 updatedAt = DateTime.Now,
@@ -97,7 +109,7 @@ namespace AuthenticationService.Services
 
             _userDbContext.Users.Add(newUser);
             _userDbContext.SaveChanges();
-            return new { error = false, message = "User account created", data = newUser };
+            return new { error = false, message = "User account created", data = new AuthenticateDTO(newUser) };
         }
 
         public dynamic ActivateAccount(Guid userID, string username)
@@ -106,18 +118,38 @@ namespace AuthenticationService.Services
             <UserEntity>(user => user.id == userID && user.username == username);
 
             if (userEntity == null)
-            {
                 return new { error = true, message = "User not found" };
-            }
 
-            userEntity.active = 1;
+            userEntity.active = StatusIdentifiers.DEACTIVATED;
             userEntity.verified = true;
+            userEntity.updatedAt = DateTime.Now;
             _userDbContext.SaveChanges();
 
             return new { error = false, message = "User account is activated" };
         }
 
-        private bool _UserExists(string username)
+        public dynamic Deactivate(Guid userID, string reason)
+        {
+            UserEntity user = _userDbContext.Users.FirstOrDefault<UserEntity>(data => data.id == userID);
+            if (user == null) return new { error = true, message = "User not found" };
+
+            user.active = StatusIdentifiers.DEACTIVATED;
+            user.role = RoleIdentifiers.DEACTIVATED;
+            _userDbContext.SaveChanges();
+            return new { error = false, message = "User with GUID: " + userID + " has been deactivated" };
+        }
+
+        public dynamic Suspend(Guid userID, string reason)
+        {
+            UserEntity user = _userDbContext.Users.FirstOrDefault<UserEntity>(data => data.id == userID);
+            if (user == null) return new { error = true, message = "User not found" };
+
+            user.active = StatusIdentifiers.SUSPENDED;
+            _userDbContext.SaveChanges();
+            return new { error = false, message = "User with GUID: " + userID + " has been suspended" };
+        }
+
+        private bool _FindUserByUsername(string username)
         {
             return (_userDbContext.Users.FirstOrDefault
                 <UserEntity>(data => data.username == username) != null) ? true : false;

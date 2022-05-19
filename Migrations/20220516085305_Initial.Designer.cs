@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthenticationService.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20220515183248_Initial")]
+    [Migration("20220516085305_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,10 @@ namespace AuthenticationService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("RSAIdNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("active")
                         .HasColumnType("int");
 
@@ -40,21 +44,29 @@ namespace AuthenticationService.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("firstName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("gender")
                         .HasColumnType("int");
 
                     b.Property<string>("lastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("password")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("role")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("updatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("username")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("verified")
