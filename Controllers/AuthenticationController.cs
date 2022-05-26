@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AuthenticationService.Requests;
 using AuthenticationService.Services;
+using AuthenticationService.Config;
 
 namespace AuthenticationService.Controllers
 {
@@ -20,6 +21,7 @@ namespace AuthenticationService.Controllers
         /// <param name="loginRequest"></param>
         /// <returns></returns>
         [HttpPost("authenticate")]
+        [AllowAnonymous]
         public IActionResult AuthenticationProcess(AuthenticateRequest authenticateRequest)
         {
             dynamic response = _userService.Authenticate(authenticateRequest);

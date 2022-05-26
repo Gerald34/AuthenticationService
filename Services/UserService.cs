@@ -18,13 +18,16 @@ namespace AuthenticationService.Services
         private readonly AppSettings _appSettings;
         private readonly JwtSettings _jwtSettings;
         private readonly RSAIDNumberService _rSAIDNumberService;
+        private JwtService _jwtService;
 
         public UserService(
         IOptions<AppSettings> appSettings,
         IOptions<JwtSettings> jwtSettings,
         UserDbContext usersDbContext,
-        RSAIDNumberService rSAIDNumberService)
+        RSAIDNumberService rSAIDNumberService,
+        JwtService jwtService)
         {
+            _jwtService = jwtService;
             _appSettings = appSettings.Value;
             _userDbContext = usersDbContext;
             _rSAIDNumberService = rSAIDNumberService;
@@ -50,7 +53,7 @@ namespace AuthenticationService.Services
                 return new { error = true, message = "Username or password is incorrect." };
             }
 
-            var token = JwtTokenGenerator.GenerateJwtToken(user, _jwtSettings.SecretKey);
+            string token = _jwtService.GenerateJwtToken(user);
             return new
             {
                 error = false,

@@ -3,11 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using AuthenticationService.DbContexts;
 using AuthenticationService.Config;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AuthenticationService.Middleware;
-using Microsoft.AspNetCore.Authorization;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -45,11 +44,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("Bearer",
+//         policy => policy.Requirements.Add(new Authorization.AuthorizeAttribute()));
+// });
+
 // Services
 builder.Services.AddScoped<UserService, UserService>();
-builder.Services.AddScoped<RSAIDNumberService, RSAIDNumberService>();
-
-builder.Services.AddControllers();
+builder.Services.AddSingleton<RSAIDNumberService, RSAIDNumberService>();
+builder.Services.AddSingleton<JwtService, JwtService>();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

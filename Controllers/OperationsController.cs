@@ -1,3 +1,4 @@
+using AuthenticationService.Config;
 using AuthenticationService.DTO;
 using AuthenticationService.Entities;
 using AuthenticationService.Requests;
@@ -7,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthenticationService.Controllers
 {
-    [Authorize]
+    [MainAuthorize]
+    // [Authorize]
     [ApiController]
     [Route("operations")]
     public class OperationsController : ControllerBase

@@ -5,7 +5,7 @@ using MimeKit;
 using MimeKit.Text;
 using AuthenticationService.Config;
 
-namespace AuthenticationService.services
+namespace AuthenticationService.Services
 {
     public interface IEmailService
     {
